@@ -168,7 +168,7 @@ Format of GET handler:
 	func([url.Values]) ([struct|*struct|string][, error]) {}
 
 */
-func HandleGET(path string, handler interface{}, object ...interface{}) {
+func HandleGET(path string, handler interface{}, responseHeaders map[string]string, object ...interface{}) {
 	handlerFunc, in, out := getHandlerFunc(handler, object)
 	httpHandler := &httpHandler{
 		method:      "GET",
@@ -190,7 +190,7 @@ func HandleGET(path string, handler interface{}, object ...interface{}) {
 	default:
 		panic(fmt.Errorf("HandleGET(): handler accepts zero or one arguments, got %d", len(in)))
 	}
-	httpHandler.writeResult = writeResultFunc(out)
+	httpHandler.writeResult = writeResultFunc(out, responseHeaders)
 	http.Handle(path, httpHandler)
 }
 
@@ -233,7 +233,7 @@ Format of POST handler:
 	func([*struct|url.Values]) ([struct|*struct|string][, error]) {}
 
 */
-func HandlePOST(path string, handler interface{}, object ...interface{}) {
+func HandlePOST(path string, handler interface{}, responseHeaders map[string]string, object ...interface{}) {
 	handlerFunc, in, out := getHandlerFunc(handler, object)
 	httpHandler := &httpHandler{
 		method:      "POST",
@@ -357,7 +357,7 @@ func HandlePOST(path string, handler interface{}, object ...interface{}) {
 	default:
 		panic(fmt.Errorf("HandlePOST(): handler accepts only one or thwo arguments, got %d", len(in)))
 	}
-	httpHandler.writeResult = writeResultFunc(out)
+	httpHandler.writeResult = writeResultFunc(out, responseHeaders)
 	http.Handle(path, httpHandler)
 }
 
@@ -466,7 +466,13 @@ func writeError(writer http.ResponseWriter, err error) {
 	http.Error(writer, err.Error(), http.StatusInternalServerError)
 }
 
-func writeResultFunc(out []reflect.Type) func([]reflect.Value, http.ResponseWriter) {
+func setResponseHeaders(writer http.ResponseWriter, responseHeaders map[string]string) {
+	for k, v := range responseHeaders {
+		writer.Header().Set(k,  v)
+	}
+}
+
+func writeResultFunc(out []reflect.Type, responseHeaders map[string]string) func([]reflect.Value, http.ResponseWriter) {
 	var returnError func(result []reflect.Value, writer http.ResponseWriter) bool
 	switch len(out) {
 	case 2:
@@ -503,6 +509,7 @@ func writeResultFunc(out []reflect.Type) func([]reflect.Value, http.ResponseWrit
 					j = buf.Bytes()
 				}
 				writer.Header().Set("Content-Type", "application/json")
+				setResponseHeaders(writer, responseHeaders)
 				writer.Write(j)
 			}
 		} else if r.Kind() == reflect.String {
@@ -513,6 +520,7 @@ func writeResultFunc(out []reflect.Type) func([]reflect.Value, http.ResponseWrit
 				bytes := []byte(result[0].String())
 				ct := http.DetectContentType(bytes)
 				writer.Header().Set("Content-Type", ct)
+				setResponseHeaders(writer, responseHeaders)
 				writer.Write(bytes)
 			}
 		} else {
