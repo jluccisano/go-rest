@@ -40,3 +40,8 @@ func GetJSONStrict(addr string, out interface{}) error {
 	}
 	return json.Unmarshal(body, out)
 }
+
+func GetResponseHeaders(addr string, out interface{}) (*http.Response, error) {
+	return http.Get(addr)
+}
+
