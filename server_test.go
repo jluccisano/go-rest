@@ -65,7 +65,7 @@ func TestHandleGET_struct(t *testing.T) {
 	path := "/struct.json"
 	HandleGET(path, func() *Struct {
 		return NewStruct()
-	})
+	}, nil)
 	var result Struct
 	err := GetJSONStrict("http://"+ServerAddr+path, &result)
 	if err != nil {
@@ -80,7 +80,7 @@ func TestHandleGET_struct_error(t *testing.T) {
 	noerrorPath := "/struct_noerror.json"
 	HandleGET(noerrorPath, func() (*Struct, error) {
 		return NewStruct(), nil
-	})
+	}, nil)
 	var result Struct
 	err := GetJSONStrict("http://"+ServerAddr+noerrorPath, &result)
 	if err != nil {
@@ -103,6 +103,22 @@ func TestHandleGET_struct_error(t *testing.T) {
 	// if result != RefStruct {
 	// 	t.Errorf("GET %s: invalid result", ServerAddr+errorPath)
 	// }
+}
+
+func TestHandleGET_with_headers(t *testing.T) {
+	path := "/struct.json"
+	headers := map[string]string{"Access-Control-Allow-Origin": "*"}
+	HandleGET(path, func() *Struct {
+		return NewStruct()
+	}, headers)
+	var result Struct
+	err := GetJSONStrict("http://"+ServerAddr+path, &result)
+	if err != nil {
+		t.Error(err)
+	}
+	if result != RefStruct {
+		t.Errorf("GET %s: invalid result", ServerAddr+path)
+	}
 }
 
 // TODO: needs much more testing, but see example for some working code
