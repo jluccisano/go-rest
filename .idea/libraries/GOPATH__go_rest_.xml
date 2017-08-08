@@ -1,0 +1,17 @@
+<component name="libraryTable">
+  <library name="GOPATH &lt;go-rest&gt;">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/../../go/src/gopkg.in" />
+      <root url="file://$PROJECT_DIR$/../../go/src/github.com" />
+      <root url="file://$PROJECT_DIR$/../../go/src/frister.net" />
+    </CLASSES>
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/../../go/src/gopkg.in" />
+      <root url="file://$PROJECT_DIR$/../../go/src/github.com" />
+      <root url="file://$PROJECT_DIR$/../../go/src/frister.net" />
+    </SOURCES>
+    <excluded>
+      <root url="file://$PROJECT_DIR$" />
+    </excluded>
+  </library>
+</component>
